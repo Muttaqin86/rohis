@@ -53,7 +53,12 @@ function Dashboard() {
       toast.success(`Anda mendapat Juz ${res.juz_number}`);
       queryClient.invalidateQueries({ queryKey: ["board"] });
     },
-    onError: () => toast.error("Gagal mengambil Juz, coba lagi"),
+    onError: (err: unknown) =>
+      toast.error(
+        err instanceof Error && err.message
+          ? `Gagal mengambil Juz: ${err.message}`
+          : "Gagal mengambil Juz, coba lagi",
+      ),
   });
 
   const finish = useMutation({
