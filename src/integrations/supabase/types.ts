@@ -14,13 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      juz_assignments: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          juz_number: number
+          round_id: string
+          started_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          juz_number: number
+          round_id: string
+          started_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          juz_number?: number
+          round_id?: string
+          started_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juz_assignments_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "khatam_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      khatam_rounds: {
+        Row: {
+          created_at: string
+          id: string
+          nomor_putaran: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nomor_putaran: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nomor_putaran?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          nama: string
+          nik: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          nama: string
+          nik: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nama?: string
+          nik?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_next_juz: {
+        Args: { _user_id: string }
+        Returns: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          juz_number: number
+          round_id: string
+          started_at: string | null
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "juz_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
