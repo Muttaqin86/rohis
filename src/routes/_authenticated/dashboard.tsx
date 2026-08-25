@@ -34,6 +34,18 @@ function statusLabel(status: string) {
   return "Kosong";
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) return "-";
+
+  return new Date(value).toLocaleString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -118,26 +130,12 @@ function Dashboard() {
                 </p>
                 {active.started_at && (
                   <p className="text-sm text-muted-foreground">
-                    Dimulai: {" "}
-                    {new Date(active.started_at).toLocaleString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    Dimulai: {formatDateTime(active.started_at)}
                   </p>
                 )}
                 {active.finished_at && (
                   <p className="text-sm text-muted-foreground">
-                    Selesai: {" "}
-                    {new Date(active.finished_at).toLocaleString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    Selesai: {formatDateTime(active.finished_at)}
                   </p>
                 )}
                 <div className="flex flex-wrap gap-3">
@@ -205,16 +203,8 @@ function Dashboard() {
               <ul className="space-y-1 text-sm text-muted-foreground">
                 {data!.riwayat.map((r) => (
                   <li key={`${r.juz_number}-${r.finished_at}`}>
-                    Juz {r.juz_number} — selesai{" "}
-                    {r.finished_at
-                      ? new Date(r.finished_at).toLocaleString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "-"}
+                    Juz {r.juz_number} — mulai {formatDateTime(r.started_at)} — selesai{" "}
+                    {formatDateTime(r.finished_at)}
                   </li>
                 ))}
               </ul>

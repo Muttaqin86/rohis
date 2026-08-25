@@ -113,7 +113,11 @@ export const getBoard = createServerFn({ method: "GET" })
     return {
       round: round ? { nomor: round.nomor_putaran, status: round.status } : null,
       active,
-      riwayat: selesai.map((s) => ({ juz_number: s.juz_number, finished_at: s.finished_at })),
+      riwayat: selesai.map((s) => ({
+        juz_number: s.juz_number,
+        started_at: s.started_at,
+        finished_at: s.finished_at,
+      })),
       board,
       totalSelesai: totalSelesai ?? 0,
     };
