@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -116,6 +116,30 @@ function Dashboard() {
                 <p className="text-sm text-muted-foreground">
                   Status: {statusLabel(active.status)}
                 </p>
+                {active.started_at && (
+                  <p className="text-sm text-muted-foreground">
+                    Dimulai: {" "}
+                    {new Date(active.started_at).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
+                {active.finished_at && (
+                  <p className="text-sm text-muted-foreground">
+                    Selesai: {" "}
+                    {new Date(active.finished_at).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={() => handleStart(active.id, active.juz_number)}>
                     {active.status === "dibaca" ? "Lanjut baca" : "Mulai"}
@@ -183,10 +207,12 @@ function Dashboard() {
                   <li key={`${r.juz_number}-${r.finished_at}`}>
                     Juz {r.juz_number} — selesai{" "}
                     {r.finished_at
-                      ? new Date(r.finished_at).toLocaleDateString("id-ID", {
+                      ? new Date(r.finished_at).toLocaleString("id-ID", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })
                       : "-"}
                   </li>
