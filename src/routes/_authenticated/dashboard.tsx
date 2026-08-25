@@ -201,14 +201,26 @@ function Dashboard() {
               <CardTitle>Riwayat Khatam Saya</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Juz</TableHead>
+                  <TableHead>Waktu Mulai</TableHead>
+                  <TableHead>Waktu Selesai</TableHead>
+                  <TableHead>Putaran</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {data!.riwayat.map((r) => (
-                  <li key={`${r.juz_number}-${r.finished_at}`}>
-                    Juz {r.juz_number} — mulai {formatDateTime(r.started_at)} — selesai{" "}
-                    {formatDateTime(r.finished_at)}
-                  </li>
+                  <TableRow key={`${r.juz_number}-${r.finished_at}`}>
+                    <TableCell className="font-medium">Juz {r.juz_number}</TableCell>
+                    <TableCell>{formatDateTime(r.started_at)}</TableCell>
+                    <TableCell>{formatDateTime(r.finished_at)}</TableCell>
+                    <TableCell>{r.round_number ?? "-"}</TableCell>
+                  </TableRow>
                 ))}
-              </ul>
+              </TableBody>
+            </Table>
             </CardContent>
           </Card>
         )}
