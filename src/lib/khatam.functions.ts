@@ -61,10 +61,10 @@ export const getBoard = createServerFn({ method: "GET" })
     const { data: rounds, error: roundErr } = await supabase
       .from("khatam_rounds")
       .select("id, nomor_putaran, status")
-      .order("nomor_putaran", { ascending: false })
-      .limit(1);
+      .order("nomor_putaran", { ascending: false });
     if (roundErr) throw new Error(roundErr.message);
     const round = rounds?.[0] ?? null;
+    const roundNumbers = Object.fromEntries((rounds ?? []).map((r) => [r.id, r.nomor_putaran]));
 
     const { data: mine, error: mineErr } = await supabase
       .from("juz_assignments")
