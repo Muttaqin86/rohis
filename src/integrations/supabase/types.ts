@@ -20,6 +20,10 @@ export type Database = {
           finished_at: string | null
           id: string
           juz_number: number
+          last_ayah_number: number | null
+          last_read_at: string | null
+          last_surah_name: string | null
+          last_surah_number: number | null
           round_id: string
           started_at: string | null
           status: string
@@ -30,6 +34,10 @@ export type Database = {
           finished_at?: string | null
           id?: string
           juz_number: number
+          last_ayah_number?: number | null
+          last_read_at?: string | null
+          last_surah_name?: string | null
+          last_surah_number?: number | null
           round_id: string
           started_at?: string | null
           status?: string
@@ -40,6 +48,10 @@ export type Database = {
           finished_at?: string | null
           id?: string
           juz_number?: number
+          last_ayah_number?: number | null
+          last_read_at?: string | null
+          last_surah_name?: string | null
+          last_surah_number?: number | null
           round_id?: string
           started_at?: string | null
           status?: string
@@ -109,6 +121,10 @@ export type Database = {
           finished_at: string | null
           id: string
           juz_number: number
+          last_ayah_number: number | null
+          last_read_at: string | null
+          last_surah_name: string | null
+          last_surah_number: number | null
           round_id: string
           started_at: string | null
           status: string
