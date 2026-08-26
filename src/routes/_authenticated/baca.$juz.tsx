@@ -57,6 +57,21 @@ function Baca() {
     },
   });
 
+  const mark = useMutation({
+    mutationFn: (v: { surahNumber: number; surahName: string; ayahNumber: number }) =>
+      doSave({ data: { assignmentId: active!.id, ...v } }),
+    onSuccess: (_r, v) => {
+      toast.success(`Batas baca disimpan: ${v.surahName} ayat ${v.ayahNumber}`);
+      queryClient.invalidateQueries({ queryKey: ["board"] });
+    },
+    onError: () => toast.error("Gagal menyimpan batas baca"),
+  });
+
+  const isMine = !!active && active.juz_number === Number(juz);
+  const lastSurah = active?.last_surah_number ?? null;
+  const lastAyah = active?.last_ayah_number ?? null;
+  const lastId = lastSurah && lastAyah ? `ayat-${lastSurah}-${lastAyah}` : null;
+
   let currentSurah = "";
 
   return (
