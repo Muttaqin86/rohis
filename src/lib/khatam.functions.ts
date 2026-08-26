@@ -33,6 +33,33 @@ export const startReading = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const saveProgress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      assignmentId: string;
+      surahNumber: number;
+      surahName: string;
+      ayahNumber: number;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("juz_assignments")
+      .update({
+        status: "dibaca",
+        last_surah_number: data.surahNumber,
+        last_surah_name: data.surahName,
+        last_ayah_number: data.ayahNumber,
+        last_read_at: new Date().toISOString(),
+      })
+      .eq("id", data.assignmentId)
+      .eq("user_id", context.userId)
+      .neq("status", "selesai");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const finishJuz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { assignmentId: string }) => input)
