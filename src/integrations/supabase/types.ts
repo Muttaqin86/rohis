@@ -137,6 +137,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_display_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          id: string
+          nama: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

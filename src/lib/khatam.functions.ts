@@ -116,10 +116,7 @@ export const getBoard = createServerFn({ method: "GET" })
       const ids = [...new Set((rows ?? []).map((r) => r.user_id))];
       let names: Record<string, string> = {};
       if (ids.length) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, nama")
-          .in("id", ids);
+        const { data: profiles } = await supabase.rpc("get_display_names", { _ids: ids });
         names = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.nama]));
       }
 
