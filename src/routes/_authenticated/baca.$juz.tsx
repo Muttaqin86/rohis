@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { getJuzText } from "@/lib/quran.functions";
-import { finishJuz, getBoard } from "@/lib/khatam.functions";
+import { finishJuz, getBoard, saveProgress } from "@/lib/khatam.functions";
 
 export const Route = createFileRoute("/_authenticated/baca/$juz")({
   head: () => ({
