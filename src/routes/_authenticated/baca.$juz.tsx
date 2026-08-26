@@ -103,12 +103,34 @@ function Baca() {
             Gagal memuat teks. Periksa koneksi lalu muat ulang halaman.
           </p>
         )}
+        {isMine && lastId && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-accent p-4">
+            <p className="text-sm text-foreground">
+              Terakhir dibaca: <strong>{active?.last_surah_name}</strong> ayat {lastAyah}
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                document.getElementById(lastId)?.scrollIntoView({ behavior: "smooth", block: "center" })
+              }
+            >
+              Lanjutkan dari sini
+            </Button>
+          </div>
+        )}
+
         <div className="space-y-6">
           {(data?.ayahs ?? []).map((a) => {
             const showSurah = a.surahName !== currentSurah;
             currentSurah = a.surahName;
+            const isLast = a.surahNumber === lastSurah && a.numberInSurah === lastAyah;
             return (
-              <div key={a.number}>
+              <div
+                key={a.number}
+                id={`ayat-${a.surahNumber}-${a.numberInSurah}`}
+                className={isLast ? "rounded-lg border border-primary/50 bg-accent/50 p-3" : undefined}
+              >
                 {showSurah && (
                   <h2 className="mb-4 border-b border-border pb-2 text-sm font-semibold uppercase tracking-widest text-accent-foreground">
                     {a.surahNumber}. {a.surahName}
@@ -120,6 +142,24 @@ function Baca() {
                     ﴿{a.numberInSurah}﴾
                   </span>
                 </p>
+                {isMine && (
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={mark.isPending}
+                      onClick={() =>
+                        mark.mutate({
+                          surahNumber: a.surahNumber,
+                          surahName: a.surahName,
+                          ayahNumber: a.numberInSurah,
+                        })
+                      }
+                    >
+                      {isLast ? "Batas baca terakhir" : "Tandai sampai sini"}
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
