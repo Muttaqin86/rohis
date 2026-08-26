@@ -139,6 +139,17 @@ function Dashboard() {
                     Selesai: {formatDateTime(active.finished_at)}
                   </p>
                 )}
+                {active.last_surah_name && active.last_ayah_number && (
+                  <div className="rounded-lg border border-primary/40 bg-accent p-3 text-sm">
+                    <p className="font-medium text-foreground">
+                      Terakhir baca: Juz {active.juz_number} — {active.last_surah_name} ayat{" "}
+                      {active.last_ayah_number}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Ditandai: {formatDateTime(active.last_read_at)}
+                    </p>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={() => handleStart(active.id, active.juz_number)}>
                     {active.status === "dibaca" ? "Lanjut baca" : "Mulai"}
