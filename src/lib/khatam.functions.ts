@@ -95,7 +95,9 @@ export const getBoard = createServerFn({ method: "GET" })
 
     const { data: mine, error: mineErr } = await supabase
       .from("juz_assignments")
-      .select("id, juz_number, status, round_id, started_at, finished_at")
+      .select(
+        "id, juz_number, status, round_id, started_at, finished_at, last_surah_number, last_surah_name, last_ayah_number, last_read_at",
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (mineErr) throw new Error(mineErr.message);
