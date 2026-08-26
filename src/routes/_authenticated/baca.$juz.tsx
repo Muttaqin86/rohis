@@ -38,6 +38,7 @@ function Baca() {
   const fetchText = useServerFn(getJuzText);
   const fetchBoard = useServerFn(getBoard);
   const doFinish = useServerFn(finishJuz);
+  const doSave = useServerFn(saveProgress);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["juz-text", juz],
