@@ -46,7 +46,11 @@ function Landing() {
   const [loading, setLoading] = useState(false);
   const [nik, setNik] = useState("");
   const [nama, setNama] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [lupaOpen, setLupaOpen] = useState(false);
+  const [lupaNik, setLupaNik] = useState("");
+  const [lupaLoading, setLupaLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -57,16 +61,36 @@ function Landing() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: nikToEmail(nik),
-      password,
-    });
-    setLoading(false);
-    if (error) {
+    try {
+      const session = await signInWithNik({ data: { nik, password } });
+      const { error } = await supabase.auth.setSession({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      });
+      if (error) throw new Error(error.message);
+      navigate({ to: "/dashboard" });
+    } catch {
       toast.error("NIK atau kata sandi salah");
-      return;
+    } finally {
+      setLoading(false);
     }
-    navigate({ to: "/dashboard" });
+  }
+
+  async function handleLupa(e: React.FormEvent) {
+    e.preventDefault();
+    setLupaLoading(true);
+    try {
+      const res = await requestPasswordReset({
+        data: { nik: lupaNik, redirectTo: `${window.location.origin}/reset-password` },
+      });
+      toast.success(`Tautan atur ulang kata sandi dikirim ke ${res.email}`);
+      setLupaOpen(false);
+      setLupaNik("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengirim tautan");
+    } finally {
+      setLupaLoading(false);
+    }
   }
 
   async function handleSignup(e: React.FormEvent) {
@@ -77,7 +101,7 @@ function Landing() {
     }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
-      email: nikToEmail(nik),
+      email: email.trim() ? email.trim().toLowerCase() : nikToEmail(nik),
       password,
       options: {
         emailRedirectTo: window.location.origin,
@@ -88,7 +112,7 @@ function Landing() {
     if (error) {
       toast.error(
         error.message.toLowerCase().includes("already")
-          ? "NIK ini sudah terdaftar, silakan masuk"
+          ? "NIK atau email ini sudah terdaftar, silakan masuk"
           : error.message,
       );
       return;
@@ -96,6 +120,7 @@ function Landing() {
     toast.success("Pendaftaran berhasil");
     navigate({ to: "/dashboard" });
   }
+
 
   return (
     <main className="min-h-screen bg-background">
