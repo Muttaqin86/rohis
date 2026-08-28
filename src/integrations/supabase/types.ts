@@ -91,22 +91,28 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          divisi: string | null
           email: string | null
           id: string
+          lokasi_kerja: string | null
           nama: string
           nik: string
         }
         Insert: {
           created_at?: string
+          divisi?: string | null
           email?: string | null
           id: string
+          lokasi_kerja?: string | null
           nama: string
           nik: string
         }
         Update: {
           created_at?: string
+          divisi?: string | null
           email?: string | null
           id?: string
+          lokasi_kerja?: string | null
           nama?: string
           nik?: string
         }
