@@ -51,6 +51,134 @@ function formatDateTime(value: string | null) {
   });
 }
 
+function ProfileCard() {
+  const queryClient = useQueryClient();
+  const fetchProfile = useServerFn(getMyProfile);
+  const saveProfile = useServerFn(updateMyProfile);
+  const [editing, setEditing] = useState(false);
+  const [email, setEmail] = useState("");
+  const [lokasiKerja, setLokasiKerja] = useState("");
+  const [divisi, setDivisi] = useState("");
+
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchProfile(),
+  });
+
+  useEffect(() => {
+    if (!profile) return;
+    setEmail(profile.email ?? "");
+    setLokasiKerja(profile.lokasi_kerja ?? "");
+    setDivisi(profile.divisi ?? "");
+  }, [profile]);
+
+  const save = useMutation({
+    mutationFn: () => saveProfile({ data: { email, lokasiKerja, divisi } }),
+    onSuccess: () => {
+      toast.success("Profil tersimpan");
+      setEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan profil"),
+  });
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle>Profil Saya</CardTitle>
+        {!editing && !isLoading && (
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            {profile?.lokasi_kerja || profile?.divisi || profile?.email ? "Edit" : "Lengkapi"}
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Memuat...</p>
+        ) : editing ? (
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              save.mutate();
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="profil-email">Email</Label>
+              <Input
+                id="profil-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nama@perusahaan.co.id"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profil-lokasi">Lokasi kerja</Label>
+              <Input
+                id="profil-lokasi"
+                value={lokasiKerja}
+                onChange={(e) => setLokasiKerja(e.target.value)}
+                placeholder="Contoh: Kantor Pusat Jakarta"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profil-divisi">Divisi</Label>
+              <Input
+                id="profil-divisi"
+                value={divisi}
+                onChange={(e) => setDivisi(e.target.value)}
+                placeholder="Contoh: Produksi"
+              />
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button type="submit" disabled={save.isPending}>
+                {save.isPending ? "Menyimpan..." : "Simpan"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setEditing(false);
+                  setEmail(profile?.email ?? "");
+                  setLokasiKerja(profile?.lokasi_kerja ?? "");
+                  setDivisi(profile?.divisi ?? "");
+                }}
+              >
+                Batal
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Nama</p>
+              <p className="text-sm font-medium text-foreground">{profile?.nama ?? "-"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">NIK</p>
+              <p className="text-sm font-medium text-foreground">{profile?.nik ?? "-"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
+              <p className="text-sm font-medium text-foreground">{profile?.email || "-"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Lokasi kerja</p>
+              <p className="text-sm font-medium text-foreground">{profile?.lokasi_kerja || "-"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Divisi</p>
+              <p className="text-sm font-medium text-foreground">{profile?.divisi || "-"}</p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
