@@ -33,12 +33,12 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       throw new Error("Format email tidak valid");
     }
 
-    const patch: Record<string, string | null> = {
+    const patch = {
       email: email || null,
       lokasi_kerja: data.lokasiKerja?.trim() || null,
       divisi: data.divisi?.trim() || null,
+      ...(data.nama?.trim() ? { nama: data.nama.trim() } : {}),
     };
-    if (data.nama?.trim()) patch['nama'] = data.nama.trim();
 
     const { data: row, error } = await context.supabase
       .from("profiles")
