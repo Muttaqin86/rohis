@@ -57,8 +57,8 @@ export const getJuzPages = createServerFn({ method: "GET" })
     return { juz };
   })
   .handler(async ({ data }) => {
-    const start = JUZ_START_PAGES[data.juz - 1];
-    const end = data.juz === 30 ? 604 : JUZ_START_PAGES[data.juz] - 1;
+    const start = JUZ_START_PAGES[data.juz - 1]!;
+    const end = data.juz === 30 ? 604 : JUZ_START_PAGES[data.juz]! - 1;
     const pages: MushafPage[] = [];
     for (let p = start; p <= end; p++) {
       const res = await fetch(
