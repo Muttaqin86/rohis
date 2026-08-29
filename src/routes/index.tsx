@@ -238,6 +238,20 @@ function Landing() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="email-daftar">Email</Label>
+                  <Input
+                    id="email-daftar"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@perusahaan.co.id"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Dipakai untuk mengatur ulang kata sandi lewat tautan di email.
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="pw-daftar">Kata sandi</Label>
                   <Input
                     id="pw-daftar"
@@ -252,7 +266,7 @@ function Landing() {
                   {loading ? "Memproses..." : "Daftar"}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Lupa kata sandi? Hubungi admin kerohanian untuk direset.
+                  Lupa kata sandi? Kembali ke tab Masuk lalu pilih "Lupa kata sandi?".
                 </p>
               </form>
             </TabsContent>
