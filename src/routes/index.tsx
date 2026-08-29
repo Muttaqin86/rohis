@@ -177,6 +177,43 @@ function Landing() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Memproses..." : "Masuk"}
                 </Button>
+
+                <Dialog open={lupaOpen} onOpenChange={setLupaOpen}>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      Lupa kata sandi?
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Lupa kata sandi</DialogTitle>
+                      <DialogDescription>
+                        Masukkan NIK Anda. Tautan untuk mengatur ulang kata sandi akan dikirim ke
+                        email yang tercatat pada profil Anda.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleLupa} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nik-lupa">NIK</Label>
+                        <Input
+                          id="nik-lupa"
+                          value={lupaNik}
+                          onChange={(e) => setLupaNik(e.target.value)}
+                          placeholder="Contoh: 220145"
+                          required
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={lupaLoading}>
+                          {lupaLoading ? "Mengirim..." : "Kirim ke email saya"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </form>
             </TabsContent>
 
