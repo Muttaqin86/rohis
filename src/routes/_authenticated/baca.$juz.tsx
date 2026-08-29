@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { BookOpen, List } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { getJuzText } from "@/lib/quran.functions";
+import { getJuzPages, getJuzText, type Ayah } from "@/lib/quran.functions";
 import { finishJuz, getBoard, saveProgress } from "@/lib/khatam.functions";
 
 export const Route = createFileRoute("/_authenticated/baca/$juz")({
@@ -31,19 +33,84 @@ export const Route = createFileRoute("/_authenticated/baca/$juz")({
   component: Baca,
 });
 
+type MarkFn = (v: { surahNumber: number; surahName: string; ayahNumber: number }) => void;
+
+function AyahBlock({
+  ayah,
+  showSurah,
+  isLast,
+  canMark,
+  markPending,
+  onMark,
+}: {
+  ayah: Ayah;
+  showSurah: boolean;
+  isLast: boolean;
+  canMark: boolean;
+  markPending: boolean;
+  onMark: MarkFn;
+}) {
+  return (
+    <div
+      id={`ayat-${ayah.surahNumber}-${ayah.numberInSurah}`}
+      className={isLast ? "rounded-lg border border-primary/50 bg-accent/50 p-3" : undefined}
+    >
+      {showSurah && (
+        <h2 className="mb-4 border-b border-border pb-2 text-sm font-semibold uppercase tracking-widest text-accent-foreground">
+          {ayah.surahNumber}. {ayah.surahName}
+        </h2>
+      )}
+      <p dir="rtl" className="font-arabic text-3xl leading-[2.6] text-foreground">
+        {ayah.text}
+        <span className="mx-2 align-middle text-base text-muted-foreground">
+          ﴿{ayah.numberInSurah}﴾
+        </span>
+      </p>
+      {canMark && (
+        <div className="mt-2 flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={markPending}
+            onClick={() =>
+              onMark({
+                surahNumber: ayah.surahNumber,
+                surahName: ayah.surahName,
+                ayahNumber: ayah.numberInSurah,
+              })
+            }
+          >
+            {isLast ? "Batas baca terakhir" : "Tandai sampai sini"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Baca() {
   const { juz } = useParams({ from: "/_authenticated/baca/$juz" });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fetchText = useServerFn(getJuzText);
+  const fetchPages = useServerFn(getJuzPages);
   const fetchBoard = useServerFn(getBoard);
   const doFinish = useServerFn(finishJuz);
   const doSave = useServerFn(saveProgress);
+
+  const [mode, setMode] = useState<"ayat" | "mushaf">("ayat");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["juz-text", juz],
     queryFn: () => fetchText({ data: { juz: Number(juz) } }),
     staleTime: 1000 * 60 * 60,
+  });
+
+  const pagesQuery = useQuery({
+    queryKey: ["juz-pages", juz],
+    queryFn: () => fetchPages({ data: { juz: Number(juz) } }),
+    staleTime: 1000 * 60 * 60,
+    enabled: mode === "mushaf",
   });
 
   const { data: board } = useQuery({ queryKey: ["board"], queryFn: () => fetchBoard() });
@@ -83,7 +150,27 @@ function Baca() {
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Sedang dibaca</p>
             <h1 className="text-lg font-bold text-foreground">Juz {juz}</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex overflow-hidden rounded-md border border-border">
+              <Button
+                variant={mode === "ayat" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setMode("ayat")}
+              >
+                <List className="size-4" />
+                Ayat
+              </Button>
+              <Button
+                variant={mode === "mushaf" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setMode("mushaf")}
+              >
+                <BookOpen className="size-4" />
+                Mushaf
+              </Button>
+            </div>
             <Button variant="outline" size="sm" onClick={() => navigate({ to: "/dashboard" })}>
               Kembali
             </Button>
@@ -97,11 +184,27 @@ function Baca() {
       </header>
 
       <div className="mx-auto max-w-3xl px-6 py-8">
-        {isLoading && <p className="text-sm text-muted-foreground">Memuat teks Al-Qur&apos;an...</p>}
-        {isError && (
-          <p className="text-sm text-destructive">
-            Gagal memuat teks. Periksa koneksi lalu muat ulang halaman.
-          </p>
+        {mode === "ayat" && (
+          <>
+            {isLoading && <p className="text-sm text-muted-foreground">Memuat teks Al-Qur&apos;an...</p>}
+            {isError && (
+              <p className="text-sm text-destructive">
+                Gagal memuat teks. Periksa koneksi lalu muat ulang halaman.
+              </p>
+            )}
+          </>
+        )}
+        {mode === "mushaf" && (
+          <>
+            {pagesQuery.isLoading && (
+              <p className="text-sm text-muted-foreground">Memuat halaman mushaf (sekitar 20 halaman)...</p>
+            )}
+            {pagesQuery.isError && (
+              <p className="text-sm text-destructive">
+                Gagal memuat mushaf. Periksa koneksi lalu muat ulang halaman.
+              </p>
+            )}
+          </>
         )}
         {isMine && lastId && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-accent p-4">
@@ -120,50 +223,59 @@ function Baca() {
           </div>
         )}
 
-        <div className="space-y-6">
-          {(data?.ayahs ?? []).map((a) => {
-            const showSurah = a.surahName !== currentSurah;
-            currentSurah = a.surahName;
-            const isLast = a.surahNumber === lastSurah && a.numberInSurah === lastAyah;
-            return (
-              <div
-                key={a.number}
-                id={`ayat-${a.surahNumber}-${a.numberInSurah}`}
-                className={isLast ? "rounded-lg border border-primary/50 bg-accent/50 p-3" : undefined}
-              >
-                {showSurah && (
-                  <h2 className="mb-4 border-b border-border pb-2 text-sm font-semibold uppercase tracking-widest text-accent-foreground">
-                    {a.surahNumber}. {a.surahName}
-                  </h2>
-                )}
-                <p dir="rtl" className="font-arabic text-3xl leading-[2.6] text-foreground">
-                  {a.text}
-                  <span className="mx-2 align-middle text-base text-muted-foreground">
-                    ﴿{a.numberInSurah}﴾
-                  </span>
-                </p>
-                {isMine && (
-                  <div className="mt-2 flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={mark.isPending}
-                      onClick={() =>
-                        mark.mutate({
-                          surahNumber: a.surahNumber,
-                          surahName: a.surahName,
-                          ayahNumber: a.numberInSurah,
-                        })
-                      }
-                    >
-                      {isLast ? "Batas baca terakhir" : "Tandai sampai sini"}
-                    </Button>
+        {mode === "ayat" ? (
+          <div className="space-y-6">
+            {(data?.ayahs ?? []).map((a) => {
+              const showSurah = a.surahName !== currentSurah;
+              currentSurah = a.surahName;
+              return (
+                <AyahBlock
+                  key={a.number}
+                  ayah={a}
+                  showSurah={showSurah}
+                  isLast={a.surahNumber === lastSurah && a.numberInSurah === lastAyah}
+                  canMark={isMine}
+                  markPending={mark.isPending}
+                  onMark={(v) => mark.mutate(v)}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {(pagesQuery.data?.pages ?? []).map((p) => {
+              let pageSurah = "";
+              return (
+                <section
+                  key={p.page}
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                >
+                  <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+                    Halaman {p.page}
+                  </p>
+                  <div className="space-y-6 border-y border-border py-6">
+                    {p.ayahs.map((a) => {
+                      const showSurah = a.surahName !== pageSurah;
+                      pageSurah = a.surahName;
+                      return (
+                        <AyahBlock
+                          key={a.number}
+                          ayah={a}
+                          showSurah={showSurah}
+                          isLast={a.surahNumber === lastSurah && a.numberInSurah === lastAyah}
+                          canMark={isMine}
+                          markPending={mark.isPending}
+                          onMark={(v) => mark.mutate(v)}
+                        />
+                      );
+                    })}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  <p className="mt-4 text-center text-xs text-muted-foreground">۝ {p.page} ۝</p>
+                </section>
+              );
+            })}
+          </div>
+        )}
 
         {active && active.juz_number === Number(juz) && (
           <div className="mt-10 flex justify-center">
