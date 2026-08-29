@@ -265,9 +265,6 @@ function Landing() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Memproses..." : "Daftar"}
                 </Button>
-                <p className="text-xs text-muted-foreground">
-                  Lupa kata sandi? Kembali ke tab Masuk lalu pilih "Lupa kata sandi?".
-                </p>
               </form>
             </TabsContent>
           </Tabs>
