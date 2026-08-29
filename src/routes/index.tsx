@@ -177,6 +177,43 @@ function Landing() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Memproses..." : "Masuk"}
                 </Button>
+
+                <Dialog open={lupaOpen} onOpenChange={setLupaOpen}>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full text-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      Lupa kata sandi?
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Lupa kata sandi</DialogTitle>
+                      <DialogDescription>
+                        Masukkan NIK Anda. Tautan untuk mengatur ulang kata sandi akan dikirim ke
+                        email yang tercatat pada profil Anda.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleLupa} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nik-lupa">NIK</Label>
+                        <Input
+                          id="nik-lupa"
+                          value={lupaNik}
+                          onChange={(e) => setLupaNik(e.target.value)}
+                          placeholder="Contoh: 220145"
+                          required
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={lupaLoading}>
+                          {lupaLoading ? "Mengirim..." : "Kirim ke email saya"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </form>
             </TabsContent>
 
@@ -201,6 +238,20 @@ function Landing() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="email-daftar">Email</Label>
+                  <Input
+                    id="email-daftar"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@perusahaan.co.id"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Dipakai untuk mengatur ulang kata sandi lewat tautan di email.
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="pw-daftar">Kata sandi</Label>
                   <Input
                     id="pw-daftar"
@@ -215,7 +266,7 @@ function Landing() {
                   {loading ? "Memproses..." : "Daftar"}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Lupa kata sandi? Hubungi admin kerohanian untuk direset.
+                  Lupa kata sandi? Kembali ke tab Masuk lalu pilih "Lupa kata sandi?".
                 </p>
               </form>
             </TabsContent>
