@@ -248,25 +248,50 @@ function Baca() {
               return (
                 <section
                   key={p.page}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                  className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8"
                 >
-                  <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-                    Halaman {p.page}
-                  </p>
-                  <div className="space-y-6 border-y border-border py-6">
+                  <div
+                    dir="rtl"
+                    className="border-y-2 border-border py-6 text-justify font-arabic text-[1.6rem] leading-[2.9] text-foreground sm:text-3xl"
+                    style={{ textAlignLast: "center" }}
+                  >
                     {p.ayahs.map((a) => {
                       const showSurah = a.surahName !== pageSurah;
                       pageSurah = a.surahName;
+                      const isLast =
+                        a.surahNumber === lastSurah && a.numberInSurah === lastAyah;
                       return (
-                        <AyahBlock
-                          key={a.number}
-                          ayah={a}
-                          showSurah={showSurah}
-                          isLast={a.surahNumber === lastSurah && a.numberInSurah === lastAyah}
-                          canMark={isMine}
-                          markPending={mark.isPending}
-                          onMark={(v) => mark.mutate(v)}
-                        />
+                        <span key={a.number}>
+                          {showSurah && (
+                            <span className="my-4 flex items-center justify-center gap-3 rounded-md border-2 border-accent-foreground/40 bg-accent px-4 py-2 text-xl text-accent-foreground">
+                              سُورَة {a.surahName.split("(")[1]?.replace(")", "") ?? ""}
+                            </span>
+                          )}
+                          <span
+                            id={`ayat-${a.surahNumber}-${a.numberInSurah}`}
+                            className={
+                              isLast ? "rounded bg-accent px-1 ring-1 ring-primary/50" : undefined
+                            }
+                          >
+                            {a.text}{" "}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={!isMine || mark.isPending}
+                            title={isMine ? "Tandai batas baca sampai ayat ini" : undefined}
+                            onClick={() =>
+                              isMine &&
+                              mark.mutate({
+                                surahNumber: a.surahNumber,
+                                surahName: a.surahName,
+                                ayahNumber: a.numberInSurah,
+                              })
+                            }
+                            className="mx-1 inline-flex size-8 items-center justify-center rounded-full border border-accent-foreground/40 bg-accent align-middle font-sans text-xs text-accent-foreground transition-colors enabled:hover:bg-secondary"
+                          >
+                            {a.numberInSurah}
+                          </button>{" "}
+                        </span>
                       );
                     })}
                   </div>
