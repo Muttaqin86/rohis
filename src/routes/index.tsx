@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { requestPasswordReset, signInWithNik } from "@/lib/auth.functions";
+import { requestPasswordReset, requestPasswordResetWa, signInWithNik } from "@/lib/auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +51,7 @@ function Landing() {
   const [lupaOpen, setLupaOpen] = useState(false);
   const [lupaNik, setLupaNik] = useState("");
   const [lupaLoading, setLupaLoading] = useState(false);
+  const [lupaMode, setLupaMode] = useState<"email" | "wa">("email");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -80,14 +81,21 @@ function Landing() {
     e.preventDefault();
     setLupaLoading(true);
     try {
-      const res = await requestPasswordReset({
-        data: { nik: lupaNik, redirectTo: `${window.location.origin}/reset-password` },
-      });
-      toast.success(`Tautan atur ulang kata sandi dikirim ke ${res.email}`);
+      if (lupaMode === "wa") {
+        await requestPasswordResetWa({ data: { nik: lupaNik } });
+        toast.success(
+          "Permintaan diteruskan ke admin. Tautan reset akan dikirim ke WhatsApp Anda.",
+        );
+      } else {
+        const res = await requestPasswordReset({
+          data: { nik: lupaNik, redirectTo: `${window.location.origin}/reset-password` },
+        });
+        toast.success(`Tautan atur ulang kata sandi dikirim ke ${res.email}`);
+      }
       setLupaOpen(false);
       setLupaNik("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal mengirim tautan");
+      toast.error(err instanceof Error ? err.message : "Gagal memproses permintaan");
     } finally {
       setLupaLoading(false);
     }
