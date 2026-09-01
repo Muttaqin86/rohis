@@ -6,8 +6,10 @@ export type MyProfile = {
   nik: string;
   nama: string;
   email: string | null;
+  phone: string | null;
   lokasi_kerja: string | null;
   divisi: string | null;
+  is_admin: boolean;
 };
 
 export const getMyProfile = createServerFn({ method: "GET" })
@@ -15,26 +17,43 @@ export const getMyProfile = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("profiles")
-      .select("id, nik, nama, email, lokasi_kerja, divisi")
+      .select("id, nik, nama, email, phone, lokasi_kerja, divisi")
       .eq("id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return (data ?? null) as MyProfile | null;
+    if (!data) return null;
+
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    return { ...(data as Omit<MyProfile, "is_admin">), is_admin: !!isAdmin } as MyProfile;
   });
 
 export const updateMyProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { nama?: string; email?: string; lokasiKerja?: string; divisi?: string }) => input,
+    (input: {
+      nama?: string;
+      email?: string;
+      phone?: string;
+      lokasiKerja?: string;
+      divisi?: string;
+    }) => input,
   )
   .handler(async ({ data, context }) => {
     const email = data.email?.trim() ?? "";
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new Error("Format email tidak valid");
     }
+    const phone = (data.phone ?? "").replace(/[^\d+]/g, "");
+    if (phone && !/^\+?\d{9,15}$/.test(phone)) {
+      throw new Error("Nomor WhatsApp tidak valid, contoh: 08123456789");
+    }
 
     const patch = {
       email: email || null,
+      phone: phone || null,
       lokasi_kerja: data.lokasiKerja?.trim() || null,
       divisi: data.divisi?.trim() || null,
       ...(data.nama?.trim() ? { nama: data.nama.trim() } : {}),
@@ -44,8 +63,13 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       .from("profiles")
       .update(patch)
       .eq("id", context.userId)
-      .select("id, nik, nama, email, lokasi_kerja, divisi")
+      .select("id, nik, nama, email, phone, lokasi_kerja, divisi")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return row as MyProfile | null;
+    if (!row) return null;
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    return { ...(row as Omit<MyProfile, "is_admin">), is_admin: !!isAdmin } as MyProfile;
   });
