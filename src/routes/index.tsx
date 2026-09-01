@@ -199,10 +199,19 @@ function Landing() {
                     <DialogHeader>
                       <DialogTitle>Lupa kata sandi</DialogTitle>
                       <DialogDescription>
-                        Masukkan NIK Anda. Tautan untuk mengatur ulang kata sandi akan dikirim ke
-                        email yang tercatat pada profil Anda.
+                        Masukkan NIK Anda, lalu pilih tautan reset dikirim lewat email atau
+                        WhatsApp.
                       </DialogDescription>
                     </DialogHeader>
+                    <Tabs
+                      value={lupaMode}
+                      onValueChange={(v) => setLupaMode(v as "email" | "wa")}
+                    >
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="email">Email</TabsTrigger>
+                        <TabsTrigger value="wa">WhatsApp</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
                     <form onSubmit={handleLupa} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="nik-lupa">NIK</Label>
@@ -214,9 +223,18 @@ function Landing() {
                           required
                         />
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {lupaMode === "wa"
+                          ? "Permintaan akan diteruskan ke admin, lalu tautan reset dikirim ke nomor WhatsApp pada profil Anda."
+                          : "Tautan untuk mengatur ulang kata sandi akan dikirim ke email yang tercatat pada profil Anda."}
+                      </p>
                       <DialogFooter>
                         <Button type="submit" disabled={lupaLoading}>
-                          {lupaLoading ? "Mengirim..." : "Kirim ke email saya"}
+                          {lupaLoading
+                            ? "Memproses..."
+                            : lupaMode === "wa"
+                              ? "Minta reset via WhatsApp"
+                              : "Kirim ke email saya"}
                         </Button>
                       </DialogFooter>
                     </form>
