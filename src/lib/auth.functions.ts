@@ -112,3 +112,41 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
 
     return { email: maskEmail(profile.email) };
   });
+
+/** Buat permintaan reset kata sandi via WhatsApp (ditangani admin secara manual). */
+export const requestPasswordResetWa = createServerFn({ method: "POST" })
+  .inputValidator((input: { nik: string }) => input)
+  .handler(async ({ data }) => {
+    const nik = data.nik.trim();
+    if (!nik) throw new Error("NIK wajib diisi");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, phone")
+      .eq("nik", nik)
+      .maybeSingle();
+
+    if (!profile) throw new Error("NIK tidak ditemukan");
+    if (!profile.phone) {
+      throw new Error(
+        "Nomor WhatsApp belum terisi pada profil Anda. Masuk lalu lengkapi di menu Profil, atau hubungi admin kerohanian.",
+      );
+    }
+
+    const { data: existing } = await supabaseAdmin
+      .from("password_reset_requests")
+      .select("id")
+      .eq("user_id", profile.id)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (!existing) {
+      const { error } = await supabaseAdmin
+        .from("password_reset_requests")
+        .insert({ user_id: profile.id, nik });
+      if (error) throw new Error(error.message);
+    }
+
+    return { ok: true };
+  });
