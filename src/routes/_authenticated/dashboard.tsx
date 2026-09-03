@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { claimJuz, finishJuz, getBoard, startReading } from "@/lib/khatam.functions";
+import { fulfillResetRequest, getResetRequests } from "@/lib/admin.functions";
 import { getMyProfile, updateMyProfile } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
