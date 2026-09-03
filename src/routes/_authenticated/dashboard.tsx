@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -92,7 +93,9 @@ function ProfileCard() {
         <CardTitle>Profil Saya</CardTitle>
         {!editing && !isLoading && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            {profile?.lokasi_kerja || profile?.divisi || profile?.email ? "Edit" : "Lengkapi"}
+            {profile?.lokasi_kerja || profile?.divisi || profile?.email || profile?.phone
+              ? "Edit"
+              : "Lengkapi"}
           </Button>
         )}
       </CardHeader>
