@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { claimJuz, finishJuz, getBoard, startReading } from "@/lib/khatam.functions";
+import { fulfillResetRequest, getResetRequests } from "@/lib/admin.functions";
 import { getMyProfile, updateMyProfile } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -57,6 +58,7 @@ function ProfileCard() {
   const saveProfile = useServerFn(updateMyProfile);
   const [editing, setEditing] = useState(false);
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [lokasiKerja, setLokasiKerja] = useState("");
   const [divisi, setDivisi] = useState("");
 
@@ -68,12 +70,13 @@ function ProfileCard() {
   useEffect(() => {
     if (!profile) return;
     setEmail(profile.email ?? "");
+    setPhone(profile.phone ?? "");
     setLokasiKerja(profile.lokasi_kerja ?? "");
     setDivisi(profile.divisi ?? "");
   }, [profile]);
 
   const save = useMutation({
-    mutationFn: () => saveProfile({ data: { email, lokasiKerja, divisi } }),
+    mutationFn: () => saveProfile({ data: { email, phone, lokasiKerja, divisi } }),
     onSuccess: () => {
       toast.success("Profil tersimpan");
       setEditing(false);
@@ -89,7 +92,9 @@ function ProfileCard() {
         <CardTitle>Profil Saya</CardTitle>
         {!editing && !isLoading && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            {profile?.lokasi_kerja || profile?.divisi || profile?.email ? "Edit" : "Lengkapi"}
+            {profile?.lokasi_kerja || profile?.divisi || profile?.email || profile?.phone
+              ? "Edit"
+              : "Lengkapi"}
           </Button>
         )}
       </CardHeader>
@@ -113,6 +118,18 @@ function ProfileCard() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@perusahaan.co.id"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profil-wa">Nomor WhatsApp</Label>
+              <Input
+                id="profil-wa"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Contoh: 08123456789"
+              />
+              <p className="text-xs text-muted-foreground">
+                Dipakai admin untuk mengirim tautan reset kata sandi lewat WhatsApp.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="profil-lokasi">Lokasi kerja</Label>
@@ -142,6 +159,7 @@ function ProfileCard() {
                 onClick={() => {
                   setEditing(false);
                   setEmail(profile?.email ?? "");
+                  setPhone(profile?.phone ?? "");
                   setLokasiKerja(profile?.lokasi_kerja ?? "");
                   setDivisi(profile?.divisi ?? "");
                 }}
@@ -165,6 +183,10 @@ function ProfileCard() {
               <p className="text-sm font-medium text-foreground">{profile?.email || "-"}</p>
             </div>
             <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">WhatsApp</p>
+              <p className="text-sm font-medium text-foreground">{profile?.phone || "-"}</p>
+            </div>
+            <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Lokasi kerja</p>
               <p className="text-sm font-medium text-foreground">{profile?.lokasi_kerja || "-"}</p>
             </div>
@@ -173,6 +195,85 @@ function ProfileCard() {
               <p className="text-sm font-medium text-foreground">{profile?.divisi || "-"}</p>
             </div>
           </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ResetRequestsCard() {
+  const queryClient = useQueryClient();
+  const fetchProfile = useServerFn(getMyProfile);
+  const fetchRequests = useServerFn(getResetRequests);
+  const fulfill = useServerFn(fulfillResetRequest);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchProfile(),
+  });
+  const isAdmin = !!profile?.is_admin;
+
+  const { data: requests, isLoading } = useQuery({
+    queryKey: ["reset-requests"],
+    queryFn: () => fetchRequests(),
+    enabled: isAdmin,
+  });
+
+  const fulfillMut = useMutation({
+    mutationFn: (requestId: string) =>
+      fulfill({ data: { requestId, redirectTo: `${window.location.origin}/reset-password` } }),
+    onSuccess: (res) => {
+      window.open(res.waUrl, "_blank", "noopener");
+      toast.success("Tautan dibuat, WhatsApp terbuka — tinggal kirim pesannya");
+      queryClient.invalidateQueries({ queryKey: ["reset-requests"] });
+    },
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : "Gagal membuat tautan reset"),
+  });
+
+  if (!isAdmin) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Permintaan Reset Kata Sandi (Admin)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Memuat...</p>
+        ) : (requests ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">Tidak ada permintaan yang menunggu.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>NIK</TableHead>
+                <TableHead>Nama</TableHead>
+                <TableHead>WhatsApp</TableHead>
+                <TableHead>Waktu Permintaan</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {requests!.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="font-medium">{r.nik}</TableCell>
+                  <TableCell>{r.nama}</TableCell>
+                  <TableCell>{r.phone}</TableCell>
+                  <TableCell>{formatDateTime(r.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      onClick={() => fulfillMut.mutate(r.id)}
+                      disabled={fulfillMut.isPending}
+                    >
+                      Kirim via WhatsApp
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
@@ -247,6 +348,7 @@ function Dashboard() {
 
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
         <ProfileCard />
+        <ResetRequestsCard />
 
         <Card>
           <CardHeader>
