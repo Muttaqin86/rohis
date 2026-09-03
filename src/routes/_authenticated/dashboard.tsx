@@ -201,6 +201,85 @@ function ProfileCard() {
   );
 }
 
+function ResetRequestsCard() {
+  const queryClient = useQueryClient();
+  const fetchProfile = useServerFn(getMyProfile);
+  const fetchRequests = useServerFn(getResetRequests);
+  const fulfill = useServerFn(fulfillResetRequest);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchProfile(),
+  });
+  const isAdmin = !!profile?.is_admin;
+
+  const { data: requests, isLoading } = useQuery({
+    queryKey: ["reset-requests"],
+    queryFn: () => fetchRequests(),
+    enabled: isAdmin,
+  });
+
+  const fulfillMut = useMutation({
+    mutationFn: (requestId: string) =>
+      fulfill({ data: { requestId, redirectTo: `${window.location.origin}/reset-password` } }),
+    onSuccess: (res) => {
+      window.open(res.waUrl, "_blank", "noopener");
+      toast.success("Tautan dibuat, WhatsApp terbuka — tinggal kirim pesannya");
+      queryClient.invalidateQueries({ queryKey: ["reset-requests"] });
+    },
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : "Gagal membuat tautan reset"),
+  });
+
+  if (!isAdmin) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Permintaan Reset Kata Sandi (Admin)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Memuat...</p>
+        ) : (requests ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">Tidak ada permintaan yang menunggu.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>NIK</TableHead>
+                <TableHead>Nama</TableHead>
+                <TableHead>WhatsApp</TableHead>
+                <TableHead>Waktu Permintaan</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {requests!.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="font-medium">{r.nik}</TableCell>
+                  <TableCell>{r.nama}</TableCell>
+                  <TableCell>{r.phone}</TableCell>
+                  <TableCell>{formatDateTime(r.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      onClick={() => fulfillMut.mutate(r.id)}
+                      disabled={fulfillMut.isPending}
+                    >
+                      Kirim via WhatsApp
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
