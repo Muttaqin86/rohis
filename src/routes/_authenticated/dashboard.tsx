@@ -118,6 +118,18 @@ function ProfileCard() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="profil-wa">Nomor WhatsApp</Label>
+              <Input
+                id="profil-wa"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Contoh: 08123456789"
+              />
+              <p className="text-xs text-muted-foreground">
+                Dipakai admin untuk mengirim tautan reset kata sandi lewat WhatsApp.
+              </p>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="profil-lokasi">Lokasi kerja</Label>
               <Input
                 id="profil-lokasi"
