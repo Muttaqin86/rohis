@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
@@ -160,6 +159,7 @@ function ProfileCard() {
                 onClick={() => {
                   setEditing(false);
                   setEmail(profile?.email ?? "");
+                  setPhone(profile?.phone ?? "");
                   setLokasiKerja(profile?.lokasi_kerja ?? "");
                   setDivisi(profile?.divisi ?? "");
                 }}
@@ -181,6 +181,10 @@ function ProfileCard() {
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
               <p className="text-sm font-medium text-foreground">{profile?.email || "-"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">WhatsApp</p>
+              <p className="text-sm font-medium text-foreground">{profile?.phone || "-"}</p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Lokasi kerja</p>
