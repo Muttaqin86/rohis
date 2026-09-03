@@ -348,6 +348,7 @@ function Dashboard() {
 
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
         <ProfileCard />
+        <ResetRequestsCard />
 
         <Card>
           <CardHeader>
