@@ -103,6 +103,7 @@ export const fulfillResetRequest = createServerFn({ method: "POST" })
       .update({ status: "sent", handled_at: new Date().toISOString() })
       .eq("id", request.id);
 
+
     const message = [
       `Assalamu'alaikum ${profile.nama},`,
       "",
