@@ -51,12 +51,17 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       throw new Error("Nomor WhatsApp tidak valid, contoh: 08123456789");
     }
 
+    const nama = data.nama?.trim() ?? "";
+    if (!nama) {
+      throw new Error("Nama wajib diisi");
+    }
+
     const patch = {
+      nama,
       email: email || null,
       phone: phone || null,
       lokasi_kerja: data.lokasiKerja?.trim() || null,
       divisi: data.divisi?.trim() || null,
-      ...(data.nama?.trim() ? { nama: data.nama.trim() } : {}),
     };
 
     const { data: row, error } = await context.supabase
