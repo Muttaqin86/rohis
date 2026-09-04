@@ -112,6 +112,15 @@ function ProfileCard() {
             }}
           >
             <div className="space-y-2">
+              <Label htmlFor="profil-nama">Nama</Label>
+              <Input
+                id="profil-nama"
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
+                placeholder="Nama lengkap"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="profil-email">Email</Label>
               <Input
                 id="profil-email"
@@ -160,6 +169,7 @@ function ProfileCard() {
                 variant="ghost"
                 onClick={() => {
                   setEditing(false);
+                  setNama(profile?.nama ?? "");
                   setEmail(profile?.email ?? "");
                   setPhone(profile?.phone ?? "");
                   setLokasiKerja(profile?.lokasi_kerja ?? "");
