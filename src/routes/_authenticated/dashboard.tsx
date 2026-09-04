@@ -57,6 +57,7 @@ function ProfileCard() {
   const fetchProfile = useServerFn(getMyProfile);
   const saveProfile = useServerFn(updateMyProfile);
   const [editing, setEditing] = useState(false);
+  const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [lokasiKerja, setLokasiKerja] = useState("");
@@ -69,6 +70,7 @@ function ProfileCard() {
 
   useEffect(() => {
     if (!profile) return;
+    setNama(profile.nama ?? "");
     setEmail(profile.email ?? "");
     setPhone(profile.phone ?? "");
     setLokasiKerja(profile.lokasi_kerja ?? "");
@@ -76,7 +78,7 @@ function ProfileCard() {
   }, [profile]);
 
   const save = useMutation({
-    mutationFn: () => saveProfile({ data: { email, phone, lokasiKerja, divisi } }),
+    mutationFn: () => saveProfile({ data: { nama, email, phone, lokasiKerja, divisi } }),
     onSuccess: () => {
       toast.success("Profil tersimpan");
       setEditing(false);
