@@ -115,3 +115,100 @@ export const fulfillResetRequest = createServerFn({ method: "POST" })
 
     return { waUrl: `https://wa.me/${normalizeWaNumber(profile.phone)}?text=${encodeURIComponent(message)}` };
   });
+
+export type ReportUserRow = {
+  id: string;
+  nik: string;
+  nama: string;
+  divisi: string | null;
+  lokasi_kerja: string | null;
+  juz_selesai: number;
+  juz_aktif: number;
+  terakhir_selesai: string | null;
+};
+
+export type AdminReport = {
+  summary: {
+    total_peserta: number;
+    total_putaran: number;
+    total_juz_selesai: number;
+    juz_dibaca: number;
+    reset_pending: number;
+  };
+  perUser: ReportUserRow[];
+};
+
+/** Laporan progres khatam seluruh peserta (khusus admin). */
+export const getAdminReport = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminReport> => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [profilesRes, assignmentsRes, roundsRes, resetRes] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, nik, nama, divisi, lokasi_kerja"),
+      supabaseAdmin
+        .from("juz_assignments")
+        .select("user_id, status, finished_at"),
+      supabaseAdmin.from("khatam_rounds").select("id", { count: "exact", head: true }),
+      supabaseAdmin
+        .from("password_reset_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+    ]);
+    if (profilesRes.error) throw new Error(profilesRes.error.message);
+    if (assignmentsRes.error) throw new Error(assignmentsRes.error.message);
+
+    const stats = new Map<
+      string,
+      { selesai: number; aktif: number; terakhir: string | null }
+    >();
+    let totalSelesai = 0;
+    let juzDibaca = 0;
+    for (const a of assignmentsRes.data ?? []) {
+      const s = stats.get(a.user_id) ?? { selesai: 0, aktif: 0, terakhir: null };
+      if (a.status === "selesai") {
+        s.selesai += 1;
+        totalSelesai += 1;
+        if (a.finished_at && (!s.terakhir || a.finished_at > s.terakhir)) {
+          s.terakhir = a.finished_at;
+        }
+      } else {
+        s.aktif += 1;
+        if (a.status === "dibaca") juzDibaca += 1;
+      }
+      stats.set(a.user_id, s);
+    }
+
+    const perUser: ReportUserRow[] = (profilesRes.data ?? [])
+      .map((p) => {
+        const s = stats.get(p.id) ?? { selesai: 0, aktif: 0, terakhir: null };
+        return {
+          id: p.id,
+          nik: p.nik,
+          nama: p.nama,
+          divisi: p.divisi,
+          lokasi_kerja: p.lokasi_kerja,
+          juz_selesai: s.selesai,
+          juz_aktif: s.aktif,
+          terakhir_selesai: s.terakhir,
+        };
+      })
+      .sort((a, b) => b.juz_selesai - a.juz_selesai || a.nama.localeCompare(b.nama));
+
+    return {
+      summary: {
+        total_peserta: (profilesRes.data ?? []).length,
+        total_putaran: roundsRes.count ?? 0,
+        total_juz_selesai: totalSelesai,
+        juz_dibaca: juzDibaca,
+        reset_pending: resetRes.count ?? 0,
+      },
+      perUser,
+    };
+  });
