@@ -296,6 +296,13 @@ function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fetchBoard = useServerFn(getBoard);
+  const fetchProfile = useServerFn(getMyProfile);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchProfile(),
+  });
+  const isAdmin = !!profile?.is_admin;
   const doClaim = useServerFn(claimJuz);
   const doStart = useServerFn(startReading);
   const doFinish = useServerFn(finishJuz);
@@ -352,9 +359,16 @@ function Dashboard() {
             </p>
             <h1 className="text-lg font-bold text-foreground">Khatam Al-Qur&apos;an</h1>
           </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            Keluar
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => navigate({ to: "/laporan" })}>
+                Laporan
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              Keluar
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedLaporanRouteImport } from './routes/_authenticated/laporan'
 import { Route as AuthenticatedBacaJuzRouteImport } from './routes/_authenticated/baca.$juz'
 
 const IndexRoute = IndexRouteImport.update({
@@ -34,6 +35,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLaporanRoute = AuthenticatedLaporanRouteImport.update({
+  id: '/laporan',
+  path: '/laporan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBacaJuzRoute = AuthenticatedBacaJuzRouteImport.update({
   id: '/baca/$juz',
   path: '/baca/$juz',
@@ -44,12 +50,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/laporan': typeof AuthenticatedLaporanRoute
   '/baca/$juz': typeof AuthenticatedBacaJuzRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/laporan': typeof AuthenticatedLaporanRoute
   '/baca/$juz': typeof AuthenticatedBacaJuzRoute
 }
 export interface FileRoutesById {
@@ -58,19 +66,21 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/laporan': typeof AuthenticatedLaporanRoute
   '/_authenticated/baca/$juz': typeof AuthenticatedBacaJuzRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/reset-password' | '/dashboard' | '/baca/$juz'
+  fullPaths: '/' | '/reset-password' | '/dashboard' | '/laporan' | '/baca/$juz'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/reset-password' | '/dashboard' | '/baca/$juz'
+  to: '/' | '/reset-password' | '/dashboard' | '/laporan' | '/baca/$juz'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/reset-password'
     | '/_authenticated/dashboard'
+    | '/_authenticated/laporan'
     | '/_authenticated/baca/$juz'
   fileRoutesById: FileRoutesById
 }
@@ -110,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/laporan': {
+      id: '/_authenticated/laporan'
+      path: '/laporan'
+      fullPath: '/laporan'
+      preLoaderRoute: typeof AuthenticatedLaporanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/baca/$juz': {
       id: '/_authenticated/baca/$juz'
       path: '/baca/$juz'
@@ -122,11 +139,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLaporanRoute: typeof AuthenticatedLaporanRoute
   AuthenticatedBacaJuzRoute: typeof AuthenticatedBacaJuzRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLaporanRoute: AuthenticatedLaporanRoute,
   AuthenticatedBacaJuzRoute: AuthenticatedBacaJuzRoute,
 }
 
