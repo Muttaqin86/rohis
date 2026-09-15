@@ -1,11 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getAdminReport } from "@/lib/admin.functions";
+import { getAdminReport, startNewRound } from "@/lib/admin.functions";
 import { getMyProfile } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/laporan")({
@@ -56,6 +68,19 @@ function LaporanPage() {
     enabled: isAdmin,
   });
 
+  const queryClient = useQueryClient();
+  const doStartNewRound = useServerFn(startNewRound);
+  const resetRound = useMutation({
+    mutationFn: () => doStartNewRound(),
+    onSuccess: (res) => {
+      toast.success(`Putaran baru dimulai — Putaran ${res.nomor_putaran}, Juz kembali dari 1`);
+      queryClient.invalidateQueries({ queryKey: ["admin-report"] });
+      queryClient.invalidateQueries({ queryKey: ["board"] });
+    },
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : "Gagal memulai putaran baru"),
+  });
+
   if (profileLoading || (isAdmin && isLoading)) {
     return (
       <main className="min-h-screen bg-background p-6">
@@ -104,6 +129,41 @@ function LaporanPage() {
             </Card>
           ))}
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Mulai Putaran Baru</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Menutup putaran yang sedang berjalan dan memulai putaran baru dari Juz 1. Juz yang
+              belum selesai akan dilepas agar bisa diambil ulang; riwayat Juz yang sudah selesai
+              tetap tersimpan.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={resetRound.isPending}>
+                  {resetRound.isPending ? "Memproses..." : "Mulai dari Juz 1 lagi"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Mulai putaran baru?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Semua Juz yang belum selesai pada putaran ini akan dilepas dan pembagian Juz
+                    dimulai kembali dari Juz 1. Tindakan ini tidak bisa dibatalkan.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => resetRound.mutate()}>
+                    Ya, mulai putaran baru
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
