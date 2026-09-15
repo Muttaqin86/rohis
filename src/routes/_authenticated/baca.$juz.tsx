@@ -5,6 +5,12 @@ import { useState } from "react";
 import { BookOpen, List } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getJuzPages, getJuzText, type Ayah } from "@/lib/quran.functions";
 import { finishJuz, getBoard, saveProgress } from "@/lib/khatam.functions";
 
@@ -250,6 +256,7 @@ function Baca() {
                   key={p.page}
                   className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8"
                 >
+                  <TooltipProvider delayDuration={200}>
                   <div
                     dir="rtl"
                     className="border-y-2 border-border py-6 text-justify font-arabic text-[1.6rem] leading-[2.9] text-foreground sm:text-3xl"
