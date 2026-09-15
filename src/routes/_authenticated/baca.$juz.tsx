@@ -5,6 +5,12 @@ import { useState } from "react";
 import { BookOpen, List } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getJuzPages, getJuzText, type Ayah } from "@/lib/quran.functions";
 import { finishJuz, getBoard, saveProgress } from "@/lib/khatam.functions";
 
@@ -250,6 +256,7 @@ function Baca() {
                   key={p.page}
                   className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8"
                 >
+                  <TooltipProvider delayDuration={200}>
                   <div
                     dir="rtl"
                     className="border-y-2 border-border py-6 text-justify font-arabic text-[1.6rem] leading-[2.9] text-foreground sm:text-3xl"
@@ -275,26 +282,35 @@ function Baca() {
                           >
                             {a.text}{" "}
                           </span>
-                          <button
-                            type="button"
-                            disabled={!isMine || mark.isPending}
-                            title={isMine ? "Tandai batas baca sampai ayat ini" : undefined}
-                            onClick={() =>
-                              isMine &&
-                              mark.mutate({
-                                surahNumber: a.surahNumber,
-                                surahName: a.surahName,
-                                ayahNumber: a.numberInSurah,
-                              })
-                            }
-                            className="mx-1 inline-flex size-8 items-center justify-center rounded-full border border-accent-foreground/40 bg-accent align-middle font-sans text-xs text-accent-foreground transition-colors enabled:hover:bg-secondary"
-                          >
-                            {a.numberInSurah}
-                          </button>{" "}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                disabled={!isMine || mark.isPending}
+                                onClick={() =>
+                                  isMine &&
+                                  mark.mutate({
+                                    surahNumber: a.surahNumber,
+                                    surahName: a.surahName,
+                                    ayahNumber: a.numberInSurah,
+                                  })
+                                }
+                                className="mx-1 inline-flex size-8 cursor-pointer items-center justify-center rounded-full border border-accent-foreground/40 bg-accent align-middle font-sans text-xs text-accent-foreground transition-colors enabled:hover:bg-secondary"
+                              >
+                                {a.numberInSurah}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              {isMine
+                                ? `Klik untuk tandai bacaan sampai ayat ${a.numberInSurah}`
+                                : "Ambil Juz ini dulu untuk bisa menandai bacaan"}
+                            </TooltipContent>
+                          </Tooltip>{" "}
                         </span>
                       );
                     })}
                   </div>
+                  </TooltipProvider>
                   <p className="mt-4 text-center text-xs text-muted-foreground">۝ {p.page} ۝</p>
                 </section>
               );
