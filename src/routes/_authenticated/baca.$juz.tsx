@@ -282,22 +282,30 @@ function Baca() {
                           >
                             {a.text}{" "}
                           </span>
-                          <button
-                            type="button"
-                            disabled={!isMine || mark.isPending}
-                            title={isMine ? "Tandai batas baca sampai ayat ini" : undefined}
-                            onClick={() =>
-                              isMine &&
-                              mark.mutate({
-                                surahNumber: a.surahNumber,
-                                surahName: a.surahName,
-                                ayahNumber: a.numberInSurah,
-                              })
-                            }
-                            className="mx-1 inline-flex size-8 items-center justify-center rounded-full border border-accent-foreground/40 bg-accent align-middle font-sans text-xs text-accent-foreground transition-colors enabled:hover:bg-secondary"
-                          >
-                            {a.numberInSurah}
-                          </button>{" "}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                disabled={!isMine || mark.isPending}
+                                onClick={() =>
+                                  isMine &&
+                                  mark.mutate({
+                                    surahNumber: a.surahNumber,
+                                    surahName: a.surahName,
+                                    ayahNumber: a.numberInSurah,
+                                  })
+                                }
+                                className="mx-1 inline-flex size-8 cursor-pointer items-center justify-center rounded-full border border-accent-foreground/40 bg-accent align-middle font-sans text-xs text-accent-foreground transition-colors enabled:hover:bg-secondary"
+                              >
+                                {a.numberInSurah}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              {isMine
+                                ? `Klik untuk tandai bacaan sampai ayat ${a.numberInSurah}`
+                                : "Ambil Juz ini dulu untuk bisa menandai bacaan"}
+                            </TooltipContent>
+                          </Tooltip>{" "}
                         </span>
                       );
                     })}
