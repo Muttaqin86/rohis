@@ -132,6 +132,41 @@ function LaporanPage() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Mulai Putaran Baru</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Menutup putaran yang sedang berjalan dan memulai putaran baru dari Juz 1. Juz yang
+              belum selesai akan dilepas agar bisa diambil ulang; riwayat Juz yang sudah selesai
+              tetap tersimpan.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={resetRound.isPending}>
+                  {resetRound.isPending ? "Memproses..." : "Mulai dari Juz 1 lagi"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Mulai putaran baru?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Semua Juz yang belum selesai pada putaran ini akan dilepas dan pembagian Juz
+                    dimulai kembali dari Juz 1. Tindakan ini tidak bisa dibatalkan.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => resetRound.mutate()}>
+                    Ya, mulai putaran baru
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Progres per Peserta</CardTitle>
           </CardHeader>
           <CardContent>
