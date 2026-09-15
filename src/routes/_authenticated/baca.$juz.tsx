@@ -310,6 +310,7 @@ function Baca() {
                       );
                     })}
                   </div>
+                  </TooltipProvider>
                   <p className="mt-4 text-center text-xs text-muted-foreground">۝ {p.page} ۝</p>
                 </section>
               );
