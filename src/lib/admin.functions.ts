@@ -116,6 +116,52 @@ export const fulfillResetRequest = createServerFn({ method: "POST" })
     return { waUrl: `https://wa.me/${normalizeWaNumber(profile.phone)}?text=${encodeURIComponent(message)}` };
   });
 
+/** Mulai putaran khatam baru: tutup putaran aktif dan kosongkan Juz yang belum selesai. */
+export const startNewRound = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: rounds, error: roundsErr } = await supabaseAdmin
+      .from("khatam_rounds")
+      .select("id, nomor_putaran, status")
+      .order("nomor_putaran", { ascending: false });
+    if (roundsErr) throw new Error(roundsErr.message);
+
+    const active = (rounds ?? []).find((r) => r.status === "aktif");
+    if (active) {
+      // Lepas Juz yang belum selesai agar tidak menghalangi pengambilan di putaran baru
+      const { error: delErr } = await supabaseAdmin
+        .from("juz_assignments")
+        .delete()
+        .eq("round_id", active.id)
+        .neq("status", "selesai");
+      if (delErr) throw new Error(delErr.message);
+
+      const { error: updErr } = await supabaseAdmin
+        .from("khatam_rounds")
+        .update({ status: "selesai" })
+        .eq("id", active.id);
+      if (updErr) throw new Error(updErr.message);
+    }
+
+    const nextNumber = ((rounds ?? [])[0]?.nomor_putaran ?? 0) + 1;
+    const { data: created, error: insErr } = await supabaseAdmin
+      .from("khatam_rounds")
+      .insert({ nomor_putaran: nextNumber, status: "aktif" })
+      .select("nomor_putaran")
+      .single();
+    if (insErr) throw new Error(insErr.message);
+
+    return { nomor_putaran: created.nomor_putaran };
+  });
+
 export type ReportUserRow = {
   id: string;
   nik: string;
