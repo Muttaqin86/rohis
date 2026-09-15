@@ -68,6 +68,19 @@ function LaporanPage() {
     enabled: isAdmin,
   });
 
+  const queryClient = useQueryClient();
+  const doStartNewRound = useServerFn(startNewRound);
+  const resetRound = useMutation({
+    mutationFn: () => doStartNewRound(),
+    onSuccess: (res) => {
+      toast.success(`Putaran baru dimulai — Putaran ${res.nomor_putaran}, Juz kembali dari 1`);
+      queryClient.invalidateQueries({ queryKey: ["admin-report"] });
+      queryClient.invalidateQueries({ queryKey: ["board"] });
+    },
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : "Gagal memulai putaran baru"),
+  });
+
   if (profileLoading || (isAdmin && isLoading)) {
     return (
       <main className="min-h-screen bg-background p-6">
