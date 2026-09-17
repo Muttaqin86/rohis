@@ -200,10 +200,13 @@ export type AdminReport = {
   perUser: ReportUserRow[];
 };
 
-/** Laporan progres khatam seluruh peserta (khusus admin). */
+/** Laporan progres khatam seluruh peserta (khusus admin).
+ * - excludeArchived: hitung hanya putaran yang tidak diarsipkan.
+ */
 export const getAdminReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AdminReport> => {
+  .inputValidator((input: { excludeArchived?: boolean }) => input ?? {})
+  .handler(async ({ data, context }): Promise<AdminReport> => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
       _role: "admin",
@@ -211,13 +214,14 @@ export const getAdminReport = createServerFn({ method: "GET" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const excludeArchived = !!data?.excludeArchived;
 
     const [profilesRes, assignmentsRes, roundsRes, resetRes] = await Promise.all([
       supabaseAdmin.from("profiles").select("id, nik, nama, divisi, lokasi_kerja"),
       supabaseAdmin
         .from("juz_assignments")
-        .select("user_id, status, finished_at"),
-      supabaseAdmin.from("khatam_rounds").select("id", { count: "exact", head: true }),
+        .select("user_id, status, finished_at, round_id"),
+      supabaseAdmin.from("khatam_rounds").select("id, nomor_putaran, status"),
       supabaseAdmin
         .from("password_reset_requests")
         .select("id", { count: "exact", head: true })
@@ -226,6 +230,12 @@ export const getAdminReport = createServerFn({ method: "GET" })
     if (profilesRes.error) throw new Error(profilesRes.error.message);
     if (assignmentsRes.error) throw new Error(assignmentsRes.error.message);
 
+    const allRounds = roundsRes.data ?? [];
+    const countableRounds = excludeArchived
+      ? allRounds.filter((r) => r.status !== "arsip")
+      : allRounds;
+    const countableRoundIds = new Set(countableRounds.map((r) => r.id));
+
     const stats = new Map<
       string,
       { selesai: number; aktif: number; terakhir: string | null }
@@ -233,6 +243,7 @@ export const getAdminReport = createServerFn({ method: "GET" })
     let totalSelesai = 0;
     let juzDibaca = 0;
     for (const a of assignmentsRes.data ?? []) {
+      if (excludeArchived && !countableRoundIds.has(a.round_id)) continue;
       const s = stats.get(a.user_id) ?? { selesai: 0, aktif: 0, terakhir: null };
       if (a.status === "selesai") {
         s.selesai += 1;
@@ -266,7 +277,7 @@ export const getAdminReport = createServerFn({ method: "GET" })
     return {
       summary: {
         total_peserta: (profilesRes.data ?? []).length,
-        total_putaran: roundsRes.count ?? 0,
+        total_putaran: countableRounds.length,
         total_juz_selesai: totalSelesai,
         juz_dibaca: juzDibaca,
         reset_pending: resetRes.count ?? 0,

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getAdminReport, startNewRound } from "@/lib/admin.functions";
 import { getMyProfile } from "@/lib/profile.functions";
 
@@ -48,8 +55,6 @@ function formatDateTime(value: string | null) {
 function LaporanPage() {
   const navigate = useNavigate();
   const fetchProfile = useServerFn(getMyProfile);
-  const fetchReport = useServerFn(getAdminReport);
-
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: () => fetchProfile(),
@@ -62,9 +67,12 @@ function LaporanPage() {
     }
   }, [profileLoading, profile, isAdmin, navigate]);
 
+  const [scope, setScope] = useState<"all" | "no-arsip">("all");
+
+  const fetchReport = useServerFn(getAdminReport);
   const { data: report, isLoading } = useQuery({
-    queryKey: ["admin-report"],
-    queryFn: () => fetchReport(),
+    queryKey: ["admin-report", scope],
+    queryFn: () => fetchReport({ data: { excludeArchived: scope === "no-arsip" } }),
     enabled: isAdmin,
   });
 
@@ -196,8 +204,20 @@ function LaporanPage() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Progres per Peserta</CardTitle>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Cakupan data</span>
+              <Select value={scope} onValueChange={(v) => setScope(v as "all" | "no-arsip")}>
+                <SelectTrigger className="w-[190px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua putaran</SelectItem>
+                  <SelectItem value="no-arsip">Tanpa putaran arsip</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
