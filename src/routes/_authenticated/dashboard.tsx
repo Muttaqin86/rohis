@@ -489,7 +489,7 @@ function Dashboard() {
                     <TableCell className="font-medium">Juz {r.juz_number}</TableCell>
                     <TableCell>{formatDateTime(r.started_at)}</TableCell>
                     <TableCell>{formatDateTime(r.finished_at)}</TableCell>
-                    <TableCell>{r.round_number ?? "-"}</TableCell>
+                    <TableCell>{r.round_label ?? "-"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

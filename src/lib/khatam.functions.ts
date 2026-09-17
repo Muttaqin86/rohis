@@ -148,7 +148,7 @@ export const getBoard = createServerFn({ method: "GET" })
         juz_number: s.juz_number,
         started_at: s.started_at,
         finished_at: s.finished_at,
-        round_number: roundNumbers[s.round_id] ?? null,
+        round_label: roundLabels[s.round_id] ?? "-",
       })),
       board,
       totalSelesai: totalSelesai ?? 0,

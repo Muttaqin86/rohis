@@ -71,9 +71,13 @@ function LaporanPage() {
   const queryClient = useQueryClient();
   const doStartNewRound = useServerFn(startNewRound);
   const resetRound = useMutation({
-    mutationFn: () => doStartNewRound(),
+    mutationFn: (resetToFirst: boolean) => doStartNewRound({ data: { resetToFirst } }),
     onSuccess: (res) => {
-      toast.success(`Putaran baru dimulai — Putaran ${res.nomor_putaran}, Juz kembali dari 1`);
+      toast.success(
+        res.archived
+          ? `Riwayat lama diarsipkan — khatam dimulai lagi dari Putaran ${res.nomor_putaran}`
+          : `Putaran baru dimulai — Putaran ${res.nomor_putaran}, Juz kembali dari 1`,
+      );
       queryClient.invalidateQueries({ queryKey: ["admin-report"] });
       queryClient.invalidateQueries({ queryKey: ["board"] });
     },
