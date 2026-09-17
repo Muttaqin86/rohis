@@ -8,6 +8,13 @@
       "when": 1789659656017,
       "tag": "0000_round_archive_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789659732326,
+      "tag": "0001_claim_next_juz_ignore_arsip",
+      "breakpoints": true
     }
   ]
 }
