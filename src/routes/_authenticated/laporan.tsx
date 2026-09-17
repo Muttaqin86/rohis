@@ -204,8 +204,20 @@ function LaporanPage() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Progres per Peserta</CardTitle>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Cakupan data</span>
+              <Select value={scope} onValueChange={(v) => setScope(v as "all" | "no-arsip")}>
+                <SelectTrigger className="w-[190px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua putaran</SelectItem>
+                  <SelectItem value="no-arsip">Tanpa putaran arsip</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
