@@ -55,6 +55,18 @@ function formatDateTime(value: string | null) {
 function LaporanPage() {
   const navigate = useNavigate();
   const fetchProfile = useServerFn(getMyProfile);
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => fetchProfile(),
+  });
+  const isAdmin = !!profile?.is_admin;
+
+  useEffect(() => {
+    if (!profileLoading && profile && !isAdmin) {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [profileLoading, profile, isAdmin, navigate]);
+
   const [scope, setScope] = useState<"all" | "no-arsip">("all");
 
   const fetchReport = useServerFn(getAdminReport);
