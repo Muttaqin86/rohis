@@ -116,10 +116,15 @@ export const fulfillResetRequest = createServerFn({ method: "POST" })
     return { waUrl: `https://wa.me/${normalizeWaNumber(profile.phone)}?text=${encodeURIComponent(message)}` };
   });
 
-/** Mulai putaran khatam baru: tutup putaran aktif dan kosongkan Juz yang belum selesai. */
+/** Mulai putaran khatam baru.
+ * - Default: tutup putaran aktif dan lanjut ke nomor putaran berikutnya.
+ * - resetToFirst: arsipkan seluruh putaran lama (riwayat tetap tersimpan dengan
+ *   penanda arsip) dan mulai putaran baru dari nomor 1.
+ */
 export const startNewRound = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((input: { resetToFirst?: boolean }) => input)
+  .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
       _role: "admin",
@@ -151,7 +156,18 @@ export const startNewRound = createServerFn({ method: "POST" })
       if (updErr) throw new Error(updErr.message);
     }
 
-    const nextNumber = ((rounds ?? [])[0]?.nomor_putaran ?? 0) + 1;
+    const resetToFirst = !!data?.resetToFirst;
+    if (resetToFirst) {
+      // Arsipkan semua putaran lama; nomor putaran kembali mulai dari 1
+      const { error: archErr } = await supabaseAdmin
+        .from("khatam_rounds")
+        .update({ status: "arsip" })
+        .neq("status", "arsip");
+      if (archErr) throw new Error(archErr.message);
+    }
+
+    const currentCycle = (rounds ?? []).filter((r) => r.status !== "arsip");
+    const nextNumber = resetToFirst ? 1 : ((currentCycle[0]?.nomor_putaran ?? 0) + 1);
     const { data: created, error: insErr } = await supabaseAdmin
       .from("khatam_rounds")
       .insert({ nomor_putaran: nextNumber, status: "aktif" })
@@ -159,7 +175,7 @@ export const startNewRound = createServerFn({ method: "POST" })
       .single();
     if (insErr) throw new Error(insErr.message);
 
-    return { nomor_putaran: created.nomor_putaran };
+    return { nomor_putaran: created.nomor_putaran, archived: resetToFirst };
   });
 
 export type ReportUserRow = {

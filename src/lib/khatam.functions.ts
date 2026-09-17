@@ -90,8 +90,13 @@ export const getBoard = createServerFn({ method: "GET" })
       .select("id, nomor_putaran, status")
       .order("nomor_putaran", { ascending: false });
     if (roundErr) throw new Error(roundErr.message);
-    const round = rounds?.[0] ?? null;
-    const roundNumbers = Object.fromEntries((rounds ?? []).map((r) => [r.id, r.nomor_putaran]));
+    const round = rounds?.find((r) => r.status === "aktif") ?? rounds?.[0] ?? null;
+    const roundLabels = Object.fromEntries(
+      (rounds ?? []).map((r) => [
+        r.id,
+        r.status === "arsip" ? `${r.nomor_putaran} (arsip)` : String(r.nomor_putaran),
+      ]),
+    );
 
     const { data: mine, error: mineErr } = await supabase
       .from("juz_assignments")
@@ -143,7 +148,7 @@ export const getBoard = createServerFn({ method: "GET" })
         juz_number: s.juz_number,
         started_at: s.started_at,
         finished_at: s.finished_at,
-        round_number: roundNumbers[s.round_id] ?? null,
+        round_label: roundLabels[s.round_id] ?? "-",
       })),
       board,
       totalSelesai: totalSelesai ?? 0,
