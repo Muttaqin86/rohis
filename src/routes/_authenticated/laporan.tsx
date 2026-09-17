@@ -144,28 +144,54 @@ function LaporanPage() {
               belum selesai akan dilepas agar bisa diambil ulang; riwayat Juz yang sudah selesai
               tetap tersimpan.
             </p>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={resetRound.isPending}>
-                  {resetRound.isPending ? "Memproses..." : "Mulai dari Juz 1 lagi"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Mulai putaran baru?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Semua Juz yang belum selesai pada putaran ini akan dilepas dan pembagian Juz
-                    dimulai kembali dari Juz 1. Tindakan ini tidak bisa dibatalkan.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => resetRound.mutate()}>
-                    Ya, mulai putaran baru
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <div className="flex flex-wrap gap-3">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={resetRound.isPending}>
+                    {resetRound.isPending ? "Memproses..." : "Mulai dari Juz 1 lagi"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Mulai putaran baru?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Semua Juz yang belum selesai pada putaran ini akan dilepas dan pembagian Juz
+                      dimulai kembali dari Juz 1. Tindakan ini tidak bisa dibatalkan.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => resetRound.mutate(false)}>
+                      Ya, mulai putaran baru
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" disabled={resetRound.isPending}>
+                    Reset ke Putaran 1
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reset penomoran ke Putaran 1?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Seluruh putaran lama akan diarsipkan — riwayat Juz yang sudah selesai tetap
+                      tersimpan dan ditandai &quot;(arsip)&quot;. Khatam kemudian dimulai lagi dari
+                      Putaran 1, Juz 1. Tindakan ini tidak bisa dibatalkan.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => resetRound.mutate(true)}>
+                      Ya, reset ke Putaran 1
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </CardContent>
         </Card>
 
