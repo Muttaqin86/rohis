@@ -24,7 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getAdminReport, startNewRound } from "@/lib/admin.functions";
+import { Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import { getAdminReport, startNewRound, type ReportUserRow } from "@/lib/admin.functions";
 import { getMyProfile } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/laporan")({
