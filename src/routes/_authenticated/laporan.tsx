@@ -24,7 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getAdminReport, startNewRound } from "@/lib/admin.functions";
+import { Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import { getAdminReport, startNewRound, type ReportUserRow } from "@/lib/admin.functions";
 import { getMyProfile } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/laporan")({
@@ -50,6 +52,25 @@ function formatDateTime(value: string | null) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function exportToExcel(rows: ReportUserRow[], scope: "all" | "no-arsip") {
+  const data = rows.map((u, i) => ({
+    No: i + 1,
+    Nama: u.nama,
+    NIK: u.nik,
+    Divisi: u.divisi || "-",
+    "Lokasi Kerja": u.lokasi_kerja || "-",
+    "Juz Selesai": u.juz_selesai,
+    "Juz Aktif": u.juz_aktif,
+    "Terakhir Selesai": formatDateTime(u.terakhir_selesai),
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws["!cols"] = [{ wch: 4 }, { wch: 28 }, { wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 11 }, { wch: 9 }, { wch: 24 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Progres Peserta");
+  const stamp = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `laporan-khatam-${scope === "no-arsip" ? "tanpa-arsip" : "semua"}-${stamp}.xlsx`);
 }
 
 function LaporanPage() {
@@ -217,6 +238,18 @@ function LaporanPage() {
                   <SelectItem value="no-arsip">Tanpa putaran arsip</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!report?.perUser?.length}
+                onClick={() => {
+                  exportToExcel(report?.perUser ?? [], scope);
+                  toast.success("File Excel laporan berhasil diunduh");
+                }}
+              >
+                <Download className="mr-1 h-4 w-4" />
+                Export Excel
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
