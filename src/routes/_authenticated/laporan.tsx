@@ -238,6 +238,18 @@ function LaporanPage() {
                   <SelectItem value="no-arsip">Tanpa putaran arsip</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!report?.perUser?.length}
+                onClick={() => {
+                  exportToExcel(report?.perUser ?? [], scope);
+                  toast.success("File Excel laporan berhasil diunduh");
+                }}
+              >
+                <Download className="mr-1 h-4 w-4" />
+                Export Excel
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
