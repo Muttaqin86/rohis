@@ -39,7 +39,6 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const nikToEmail = (nik: string) => `${nik.trim().toLowerCase()}@khatam.local`;
 
 function Landing() {
   const navigate = useNavigate();
@@ -47,6 +46,7 @@ function Landing() {
   const [nik, setNik] = useState("");
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [lupaOpen, setLupaOpen] = useState(false);
   const [lupaNik, setLupaNik] = useState("");
@@ -107,13 +107,30 @@ function Landing() {
       toast.error("Nama wajib diisi");
       return;
     }
+    const emailValue = email.trim().toLowerCase();
+    if (!emailValue) {
+      toast.error("Email wajib diisi");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      toast.error("Format email tidak valid, contoh: nama@perusahaan.co.id");
+      return;
+    }
+    const phoneDigits = phone.replace(/\D/g, "");
+    const phoneValue = phoneDigits.startsWith("0")
+      ? `62${phoneDigits.slice(1)}`
+      : phoneDigits;
+    if (!/^\d{9,15}$/.test(phoneValue)) {
+      toast.error("Nomor WhatsApp wajib diisi, 9–15 digit. Contoh: 081234567890");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
-      email: email.trim() ? email.trim().toLowerCase() : nikToEmail(nik),
+      email: emailValue,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { nik: nik.trim(), nama: nama.trim() },
+        data: { nik: nik.trim(), nama: nama.trim(), phone: phoneValue },
       },
     });
     setLoading(false);
@@ -275,6 +292,22 @@ function Landing() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Dipakai untuk mengatur ulang kata sandi lewat tautan di email.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone-daftar">Nomor WhatsApp</Label>
+                  <Input
+                    id="phone-daftar"
+                    type="tel"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Contoh: 081234567890"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Dipakai oleh admin kerohanian jika Anda perlu atur ulang kata sandi via
+                    WhatsApp.
                   </p>
                 </div>
                 <div className="space-y-2">
