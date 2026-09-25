@@ -47,6 +47,7 @@ function Landing() {
   const [nik, setNik] = useState("");
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [lupaOpen, setLupaOpen] = useState(false);
   const [lupaNik, setLupaNik] = useState("");
