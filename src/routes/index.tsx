@@ -296,6 +296,22 @@ function Landing() {
                   </p>
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="phone-daftar">Nomor WhatsApp</Label>
+                  <Input
+                    id="phone-daftar"
+                    type="tel"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Contoh: 081234567890"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Dipakai oleh admin kerohanian jika Anda perlu atur ulang kata sandi via
+                    WhatsApp.
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="pw-daftar">Kata sandi</Label>
                   <Input
                     id="pw-daftar"
