@@ -59,14 +59,27 @@ function exportToExcel(rows: ReportUserRow[], scope: "all" | "no-arsip") {
     No: i + 1,
     Nama: u.nama,
     NIK: u.nik,
+    "No. HP": u.phone || "-",
     Divisi: u.divisi || "-",
     "Lokasi Kerja": u.lokasi_kerja || "-",
+    "Jam Mulai": formatDateTime(u.jam_mulai),
     "Juz Selesai": u.juz_selesai,
     "Juz Aktif": u.juz_aktif,
     "Terakhir Selesai": formatDateTime(u.terakhir_selesai),
   }));
   const ws = XLSX.utils.json_to_sheet(data);
-  ws["!cols"] = [{ wch: 4 }, { wch: 28 }, { wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 11 }, { wch: 9 }, { wch: 24 }];
+  ws["!cols"] = [
+    { wch: 4 },
+    { wch: 28 },
+    { wch: 12 },
+    { wch: 16 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 24 },
+    { wch: 11 },
+    { wch: 9 },
+    { wch: 24 },
+  ];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Progres Peserta");
   const stamp = new Date().toISOString().slice(0, 10);
