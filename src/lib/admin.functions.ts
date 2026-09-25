@@ -256,10 +256,12 @@ export const getAdminReport = createServerFn({ method: "GET" })
         }
       } else {
         s.aktif += 1;
-        if (a.started_at && (!s.mulai || a.started_at > s.mulai)) {
-          s.mulai = a.started_at;
-        }
         if (a.status === "dibaca") juzDibaca += 1;
+      }
+      // Jam mulai: dari Juz yang sedang dikerjakan; jika tidak ada, dari
+      // Juz terakhir yang dibaca (started_at terbaru di antara semua Juz).
+      if (a.started_at && (!s.mulai || a.started_at > s.mulai)) {
+        s.mulai = a.started_at;
       }
       stats.set(a.user_id, s);
     }
