@@ -271,8 +271,10 @@ function LaporanPage() {
                 <TableRow>
                   <TableHead>Nama</TableHead>
                   <TableHead>NIK</TableHead>
+                  <TableHead>No. HP</TableHead>
                   <TableHead>Divisi</TableHead>
                   <TableHead>Lokasi Kerja</TableHead>
+                  <TableHead>Jam Mulai</TableHead>
                   <TableHead className="text-right">Juz Selesai</TableHead>
                   <TableHead className="text-right">Juz Aktif</TableHead>
                   <TableHead>Terakhir Selesai</TableHead>
@@ -283,8 +285,10 @@ function LaporanPage() {
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.nama}</TableCell>
                     <TableCell>{u.nik}</TableCell>
+                    <TableCell>{u.phone || "-"}</TableCell>
                     <TableCell>{u.divisi || "-"}</TableCell>
                     <TableCell>{u.lokasi_kerja || "-"}</TableCell>
+                    <TableCell>{formatDateTime(u.jam_mulai)}</TableCell>
                     <TableCell className="text-right">{u.juz_selesai}</TableCell>
                     <TableCell className="text-right">{u.juz_aktif}</TableCell>
                     <TableCell>{formatDateTime(u.terakhir_selesai)}</TableCell>
