@@ -39,7 +39,6 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const nikToEmail = (nik: string) => `${nik.trim().toLowerCase()}@khatam.local`;
 
 function Landing() {
   const navigate = useNavigate();
