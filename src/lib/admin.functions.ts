@@ -184,8 +184,10 @@ export type ReportUserRow = {
   nama: string;
   divisi: string | null;
   lokasi_kerja: string | null;
+  phone: string | null;
   juz_selesai: number;
   juz_aktif: number;
+  jam_mulai: string | null;
   terakhir_selesai: string | null;
 };
 
