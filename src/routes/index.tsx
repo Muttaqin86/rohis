@@ -108,13 +108,30 @@ function Landing() {
       toast.error("Nama wajib diisi");
       return;
     }
+    const emailValue = email.trim().toLowerCase();
+    if (!emailValue) {
+      toast.error("Email wajib diisi");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      toast.error("Format email tidak valid, contoh: nama@perusahaan.co.id");
+      return;
+    }
+    const phoneDigits = phone.replace(/\D/g, "");
+    const phoneValue = phoneDigits.startsWith("0")
+      ? `62${phoneDigits.slice(1)}`
+      : phoneDigits;
+    if (!/^\d{9,15}$/.test(phoneValue)) {
+      toast.error("Nomor WhatsApp wajib diisi, 9–15 digit. Contoh: 081234567890");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
-      email: email.trim() ? email.trim().toLowerCase() : nikToEmail(nik),
+      email: emailValue,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { nik: nik.trim(), nama: nama.trim() },
+        data: { nik: nik.trim(), nama: nama.trim(), phone: phoneValue },
       },
     });
     setLoading(false);
