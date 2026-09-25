@@ -83,7 +83,9 @@ export type BoardEntry = {
 export const getBoard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+    // Shared board data is read server-side after auth; only safe fields are returned.
+    const { supabaseAdmin: supabase } = await import("@/integrations/supabase/client.server");
 
     const { data: rounds, error: roundErr } = await supabase
       .from("khatam_rounds")
