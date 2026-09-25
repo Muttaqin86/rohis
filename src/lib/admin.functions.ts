@@ -184,8 +184,10 @@ export type ReportUserRow = {
   nama: string;
   divisi: string | null;
   lokasi_kerja: string | null;
+  phone: string | null;
   juz_selesai: number;
   juz_aktif: number;
+  jam_mulai: string | null;
   terakhir_selesai: string | null;
 };
 
@@ -217,10 +219,10 @@ export const getAdminReport = createServerFn({ method: "GET" })
     const excludeArchived = !!data?.excludeArchived;
 
     const [profilesRes, assignmentsRes, roundsRes, resetRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, nik, nama, divisi, lokasi_kerja"),
+      supabaseAdmin.from("profiles").select("id, nik, nama, divisi, lokasi_kerja, phone"),
       supabaseAdmin
         .from("juz_assignments")
-        .select("user_id, status, finished_at, round_id"),
+        .select("user_id, status, started_at, finished_at, round_id"),
       supabaseAdmin.from("khatam_rounds").select("id, nomor_putaran, status"),
       supabaseAdmin
         .from("password_reset_requests")
@@ -238,13 +240,14 @@ export const getAdminReport = createServerFn({ method: "GET" })
 
     const stats = new Map<
       string,
-      { selesai: number; aktif: number; terakhir: string | null }
+      { selesai: number; aktif: number; mulai: string | null; terakhir: string | null }
     >();
     let totalSelesai = 0;
     let juzDibaca = 0;
     for (const a of assignmentsRes.data ?? []) {
       if (excludeArchived && !countableRoundIds.has(a.round_id)) continue;
-      const s = stats.get(a.user_id) ?? { selesai: 0, aktif: 0, terakhir: null };
+      const s =
+        stats.get(a.user_id) ?? { selesai: 0, aktif: 0, mulai: null, terakhir: null };
       if (a.status === "selesai") {
         s.selesai += 1;
         totalSelesai += 1;
@@ -253,6 +256,9 @@ export const getAdminReport = createServerFn({ method: "GET" })
         }
       } else {
         s.aktif += 1;
+        if (a.started_at && (!s.mulai || a.started_at > s.mulai)) {
+          s.mulai = a.started_at;
+        }
         if (a.status === "dibaca") juzDibaca += 1;
       }
       stats.set(a.user_id, s);
@@ -260,15 +266,18 @@ export const getAdminReport = createServerFn({ method: "GET" })
 
     const perUser: ReportUserRow[] = (profilesRes.data ?? [])
       .map((p) => {
-        const s = stats.get(p.id) ?? { selesai: 0, aktif: 0, terakhir: null };
+        const s =
+          stats.get(p.id) ?? { selesai: 0, aktif: 0, mulai: null, terakhir: null };
         return {
           id: p.id,
           nik: p.nik,
           nama: p.nama,
           divisi: p.divisi,
           lokasi_kerja: p.lokasi_kerja,
+          phone: p.phone,
           juz_selesai: s.selesai,
           juz_aktif: s.aktif,
+          jam_mulai: s.mulai,
           terakhir_selesai: s.terakhir,
         };
       })
