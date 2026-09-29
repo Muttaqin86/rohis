@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedLaporanRouteImport } from './routes/_authenticated/laporan'
+import { Route as AuthenticatedManageUserRouteImport } from './routes/_authenticated/manage-user'
 import { Route as AuthenticatedBacaJuzRouteImport } from './routes/_authenticated/baca.$juz'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +41,11 @@ const AuthenticatedLaporanRoute = AuthenticatedLaporanRouteImport.update({
   path: '/laporan',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedManageUserRoute = AuthenticatedManageUserRouteImport.update({
+  id: '/manage-user',
+  path: '/manage-user',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBacaJuzRoute = AuthenticatedBacaJuzRouteImport.update({
   id: '/baca/$juz',
   path: '/baca/$juz',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/laporan': typeof AuthenticatedLaporanRoute
+  '/manage-user': typeof AuthenticatedManageUserRoute
   '/baca/$juz': typeof AuthenticatedBacaJuzRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/laporan': typeof AuthenticatedLaporanRoute
+  '/manage-user': typeof AuthenticatedManageUserRoute
   '/baca/$juz': typeof AuthenticatedBacaJuzRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,26 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/laporan': typeof AuthenticatedLaporanRoute
+  '/_authenticated/manage-user': typeof AuthenticatedManageUserRoute
   '/_authenticated/baca/$juz': typeof AuthenticatedBacaJuzRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/reset-password' | '/dashboard' | '/laporan' | '/baca/$juz'
+  fullPaths:
+    | '/'
+    | '/reset-password'
+    | '/dashboard'
+    | '/laporan'
+    | '/manage-user'
+    | '/baca/$juz'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/reset-password' | '/dashboard' | '/laporan' | '/baca/$juz'
+  to:
+    | '/'
+    | '/reset-password'
+    | '/dashboard'
+    | '/laporan'
+    | '/manage-user'
+    | '/baca/$juz'
   id:
     | '__root__'
     | '/'
@@ -81,6 +102,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/dashboard'
     | '/_authenticated/laporan'
+    | '/_authenticated/manage-user'
     | '/_authenticated/baca/$juz'
   fileRoutesById: FileRoutesById
 }
@@ -127,6 +149,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLaporanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/manage-user': {
+      id: '/_authenticated/manage-user'
+      path: '/manage-user'
+      fullPath: '/manage-user'
+      preLoaderRoute: typeof AuthenticatedManageUserRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/baca/$juz': {
       id: '/_authenticated/baca/$juz'
       path: '/baca/$juz'
@@ -140,12 +169,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLaporanRoute: typeof AuthenticatedLaporanRoute
+  AuthenticatedManageUserRoute: typeof AuthenticatedManageUserRoute
   AuthenticatedBacaJuzRoute: typeof AuthenticatedBacaJuzRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLaporanRoute: AuthenticatedLaporanRoute,
+  AuthenticatedManageUserRoute: AuthenticatedManageUserRoute,
   AuthenticatedBacaJuzRoute: AuthenticatedBacaJuzRoute,
 }
 
