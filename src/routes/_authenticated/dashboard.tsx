@@ -365,6 +365,11 @@ function Dashboard() {
                 Laporan
               </Button>
             )}
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => navigate({ to: "/manage-user" })}>
+                Kelola User
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               Keluar
             </Button>
