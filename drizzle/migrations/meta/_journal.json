@@ -29,6 +29,13 @@
       "when": 1790340360561,
       "tag": "0003_restrict_rounds_assignments_select",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790647633202,
+      "tag": "0004_create_access_role",
+      "breakpoints": true
     }
   ]
 }
